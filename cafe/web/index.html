@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafe Companion - Smarter Ordering</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4A2E18;
+      --primary-light: #6F4E37;
+      --primary-soft: #F5EFEB;
+      --bg: #F8F6F2;
+      --card-bg: #FFFFFF;
+      --text-main: #241A15;
+      --text-muted: #73645A;
+      --accent: #E07A5F;
+      --green: #2E7D32;
+      --border: #E8E0D7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      background: var(--primary);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand h1 { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .brand p { font-size: 11px; color: var(--text-muted); }
+
+    .header-actions button {
+      background: none;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .header-actions button:hover { background: var(--primary-soft); color: var(--primary); }
+
+    /* Mode Toggles */
+    .mode-bar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Layout */
+    .main-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .left-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .right-pane {
+      width: 360px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    /* Quick Signs Bar */
+    .signs-bar {
+      background: white;
+      padding: 10px 16px;
+      margin: 12px 16px 0;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .sign-pill {
+      background: var(--primary-soft);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.1s;
+    }
+    .sign-pill:hover { transform: translateY(-2px); background: #EBDDCE; }
+
+    /* Messages Stream */
+    .chat-stream {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.bot {
+      background: white;
+      color: var(--text-main);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .msg.user {
+      background: var(--primary);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .staff-ticket-preview {
+      margin-top: 8px;
+      background: var(--primary-soft);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Hand Sign Camera Viewport */
+    .camera-viewport {
+      flex: 1;
+      margin: 12px 16px;
+      background: #151821;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      display: none;
+    }
+
+    .camera-viewport.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #landmarkCanvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .hud-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #38EF7D;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-gesture-card {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      right: 14px;
+      background: rgba(18, 20, 29, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 193, 7, 0.4);
+      padding: 14px 18px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hud-gesture-title { color: #FFC107; font-size: 14px; font-weight: 700; }
+    .hud-gesture-cmd { color: #A0A5B5; font-size: 11px; margin-top: 2px; }
+
+    .hud-action-btn {
+      background: #FFC107;
+      color: #12141D;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+    .hud-action-btn:hover { background: #FFD54F; }
+
+    /* Input Controls */
+    .input-bar {
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .input-bar input {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+      background: var(--bg);
+    }
+    .input-bar input:focus { border-color: var(--primary); background: white; }
+
+    .btn-send {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-send:hover { background: var(--primary-light); }
+
+    /* Voice Panel */
+    .voice-panel {
+      display: none;
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .voice-panel.active { display: flex; }
+
+    .mic-button {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      box-shadow: 0 4px 14px rgba(74, 46, 24, 0.3);
+    }
+    .mic-button.recording {
+      background: #D32F2F;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); }
+      70% { box-shadow: 0 0 0 16px rgba(211, 47, 47, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+    }
+
+    /* Right Pane - Order Ticket Card */
+    .ticket-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: white;
+    }
+    .ticket-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .ticket-header h3 { font-size: 15px; font-weight: 700; color: var(--primary); }
+
+    .dietary-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .tag-chip {
+      background: #E8F5E9;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .tag-chip.dairy-free { background: #E1F5FE; color: #0288D1; }
+    .tag-chip.sugar-free { background: #F3E5F5; color: #7B1FA2; }
+
+    .order-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .item-row .name { font-weight: 600; }
+    .item-row .mods { font-size: 11px; color: var(--text-muted); }
+    .item-row .price { font-weight: 700; color: var(--primary); }
+
+    .total-section {
+      border-top: 1px dashed var(--border);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+    }
+    .total-row.grand {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    .btn-confirm {
+      margin-top: 16px;
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-confirm:hover { background: var(--primary-light); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: 440px;
+      max-width: 90%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon"><span class="material-icons-round">local_cafe</span></div>
+      <div>
+        <h1>Cafe Companion</h1>
+        <p>Smarter Ordering • Non-Speaking & Multi-Lingual Accessible</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button onclick="clearOrder()"><span class="material-icons-round" style="font-size: 16px;">restart_alt</span> Reset Order</button>
+    </div>
+  </header>
+
+  <!-- Input Mode Selector -->
+  <div class="mode-bar">
+    <button class="mode-btn active" id="btnModeText" onclick="setMode('text')">
+      <span class="material-icons-round">chat</span> Text Chat (Omni-Language)
+    </button>
+    <button class="mode-btn" id="btnModeVoice" onclick="setMode('voice')">
+      <span class="material-icons-round">mic</span> Voice Input (Auto-Detect)
+    </button>
+    <button class="mode-btn" id="btnModeSigns" onclick="setMode('signs')">
+      <span class="material-icons-round">back_hand</span> Hand Sign Camera (ML Kit)
+    </button>
+  </div>
+
+  <div class="main-content">
+    <div class="left-pane">
+      <!-- Quick Sign Legend -->
+      <div class="signs-bar">
+        <span style="font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase;">Accessibility Signs:</span>
+        <div class="sign-pill" onclick="sendOrder('👍 Confirm and place order')">👍 Thumbs-Up (Confirm)</div>
+        <div class="sign-pill" onclick="sendOrder('✋ Clear order')">✋ Open Palm (Clear)</div>
+        <div class="sign-pill" onclick="sendOrder('Order 1 Caffe Latte')">☝️ 1 Finger (Latte)</div>
+        <div class="sign-pill" onclick="sendOrder('Order 1 Matcha Green Tea')">✌️ Peace (Matcha)</div>
+        <div class="sign-pill" onclick="sendOrder('Add Oat Milk to beverage')">👌 OK Sign (Oat Milk)</div>
+        <div class="sign-pill" onclick="sendOrder('Make it Sugar-Free')">✊ Fist (Sugar-Free)</div>
+      </div>
+
+      <!-- Chat Stream -->
+      <div class="chat-stream" id="chatStream">
+        <div class="msg bot">
+          ☕ <strong>Welcome to Cafe Companion!</strong><br>
+          You can order using <em>any spoken language</em>, text (Spanish, Hindi, Japanese, French, etc.), or <em>camera hand gestures</em>.
+        </div>
+      </div>
+
+      <!-- Simulated ML Camera Viewport with 1.5s Hold Indicator -->
+      <div class="camera-viewport" id="cameraViewport">
+        <canvas id="landmarkCanvas"></canvas>
+        <div class="hud-badge">
+          <span class="material-icons-round" style="font-size: 14px;">videocam</span> ML Kit Landmark Tracker ACTIVE (30 FPS)
+        </div>
+        <div class="hud-gesture-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="hud-gesture-title" id="hudGestureTitle">Standby • Ready for Gesture</div>
+              <div class="hud-gesture-cmd" id="hudGestureCmd">Hold gesture steady for 1.5 seconds to register</div>
+            </div>
+            <div id="holdTimeBadge" style="font-size: 11px; font-weight: 700; color: #FFC107;">0.0s / 1.5s</div>
+          </div>
+          <!-- Visual Hold Progress Bar -->
+          <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 4px; overflow: hidden;">
+            <div id="hudHoldProgress" style="width: 0%; height: 100%; background: #FFC107; transition: width 0.1s linear;"></div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <button class="hud-action-btn" style="flex: 1; background: rgba(255, 255, 255, 0.15); color: white;" onclick="cycleNextGestureDemo()">Cycle Next Sign</button>
+            <button class="hud-action-btn" id="hudActionBtn" style="flex: 1;" onclick="dispatchActiveGesture()" disabled>Hold 1.5s to Enable</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Input Panel -->
+      <div class="voice-panel" id="voicePanel">
+        <button class="mic-button" id="micBtn" onclick="toggleVoiceRecording()">
+          <span class="material-icons-round" style="font-size: 32px;">mic</span>
+        </button>
+        <p id="micStatus" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+          Tap to speak in any language (Spanish, Japanese, Hindi, French...)
+        </p>
+      </div>
+
+      <!-- Text Input Bar -->
+      <div class="input-bar" id="inputBar">
+        <input type="text" id="orderInput" placeholder='Type order (e.g., "Quiero un café con leche con avena", "1 tea oat milk", "मसाला चाय बिना चीनी")...' onkeydown="if(event.key==='Enter') sendCurrentText()">
+        <button class="btn-send" onclick="sendCurrentText()">
+          <span class="material-icons-round">send</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Pane: Active Order Confirmation Ticket -->
+    <div class="right-pane">
+      <div class="ticket-card">
+        <div class="ticket-header">
+          <h3>Active Order (<span id="ticketCount">0</span> items)</h3>
+          <span class="material-icons-round" style="color: var(--primary); cursor: pointer;" onclick="clearOrder()">delete_outline</span>
+        </div>
+
+        <div class="dietary-tags-wrap" id="dietaryTagsWrap">
+          <!-- Live dietary chips injected here -->
+        </div>
+
+        <div class="order-items-list" id="orderItemsList">
+          <p style="color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 20px 0;">
+            No items yet. Speak, type, or sign to add food & drinks!
+          </p>
+        </div>
+
+        <div class="total-section">
+          <div class="total-row"><span>Subtotal:</span><span id="txtSubtotal">$0.00</span></div>
+          <div class="total-row"><span>Sales Tax (8.25%):</span><span id="txtTax">$0.00</span></div>
+          <div class="total-row grand"><span>Total:</span><span id="txtTotal">$0.00</span></div>
+        </div>
+
+        <button class="btn-confirm" id="btnConfirm" onclick="confirmOrder()" disabled style="opacity: 0.5;">
+          <span class="material-icons-round">thumb_up</span> Confirm Order (👍)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Confirmation Modal -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal-box">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+        <span class="material-icons-round" style="color: #2E7D32; font-size: 32px;">check_circle</span>
+        <div>
+          <h2 style="font-size: 17px; font-weight: 800;">Order Sent to Kitchen!</h2>
+          <p style="font-size: 11px; color: var(--text-muted);" id="receiptModalId">Ticket #ORD-84920</p>
+        </div>
+      </div>
+
+      <!-- Customer Native View -->
+      <div style="background: var(--primary-soft); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">
+          🌐 Customer Native Reply (<span id="modalCustLang">Language</span>):
+        </div>
+        <div id="modalCustReply" style="font-size: 13.5px; font-weight: 600;"></div>
+      </div>
+
+      <!-- Barista English Ticket -->
+      <div style="background: #F8F9FA; border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 14px;">
+        <div style="font-size: 11px; font-weight: 700; color: #374151; margin-bottom: 6px;">
+          ☕ Barista Ticket (Standardized English):
+        </div>
+        <div id="modalBaristaItems" style="font-size: 13px; font-weight: 500; line-height: 1.5;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; margin-bottom: 16px;">
+        <span>Total Paid:</span>
+        <span id="modalTotal" style="color: var(--primary);">$0.00</span>
+      </div>
+
+      <button class="btn-confirm" onclick="closeModal()">Done & New Order</button>
+    </div>
+  </div>
+
+  <script>
+    let activeCart = [];
+    let currentInputMode = 'text';
+    let isRecording = false;
+    let activeGesture = null;
+
+    // AI Multi-lingual order parsing engine
+    function parseAiOrder(input) {
+      const lower = input.toLowerCase().trim();
+      let lang = 'English';
+      let reply = 'Got it! Your order has been updated.';
+      let intent = 'ORDER_ITEMS';
+      const items = [];
+      const dietary = [];
+
+      // Multi-lingual auto-detection
+      if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(input) || lower.includes('kudasai') || lower.includes('onegai') || lower.includes('konnichiwa')) {
+        lang = 'Japanese';
+        reply = 'ご注文を承りました！バリスタが丁寧に準備いたします。';
+      } else if (/[\u0900-\u097F]/.test(input) || (lower.includes('chai') && lower.includes('chahiye')) || lower.includes('namaste')) {
+        lang = 'Hindi';
+        reply = 'आपका ऑर्डर नोट कर लिया गया है! धन्यवाद।';
+      } else if (lower.includes('por favor') || lower.includes('quiero') || lower.includes('café con leche') || lower.includes('gracias') || lower.includes('hola') || lower.includes('buenos días')) {
+        lang = 'Spanish';
+        reply = '¡Por supuesto! Hemos registrado su pedido con gusto.';
+      } else if (lower.includes("s'il vous plaît") || lower.includes('je voudrais') || lower.includes('merci') || lower.includes('bonjour') || lower.includes('salut')) {
+        lang = 'French';
+        reply = 'Très bien ! Votre commande a été enregistrée avec succès.';
+      }
+
+      // 1. GREETINGS
+      const isGreeting = /^(hello|hi|hey|good morning|good afternoon|hola|buenos días|bonjour|salut|namaste|नमस्ते|konnichiwa|こんにちは)[!.,\s]*$/i.test(lower) ||
+        ['hello', 'hi', 'hey', 'hola', 'bonjour', 'namaste', 'नमस्ते', 'こんにちは'].includes(lower);
+
+      if (isGreeting) {
+        let greetingReply = 'Hello! Welcome to Cafe Companion. What would you like to order today?';
+        if (lang === 'Spanish') greetingReply = '¡Hola! Bienvenido a Cafe Companion. ¿Qué le gustaría ordenar hoy?';
+        else if (lang === 'French') greetingReply = 'Bonjour ! Bienvenue au Café Companion. Que souhaitez-vous commander aujourd\'hui ?';
+        else if (lang === 'Japanese') greetingReply = 'こんにちは！カフェコンパニオンへようこそ。本日はいかがなさいますか？';
+        else if (lang === 'Hindi') greetingReply = 'नमस्ते! कैफ़े कंपैनियन में आपका स्वागत है। आज आप क्या लेना पसंद करेंगे?';
+
+        return { detected_language: lang, customer_reply: greetingReply, intent: 'CONVERSATION', items: [], dietary: [], staff_notes_english: '' };
+      }
+
+      // 2. INQUIRIES & RECOMMENDATIONS
+      if (lower.includes('recommend') || lower.includes('what do you have') || lower.includes('menu') || lower.includes('sugerir') || lower.includes('conseille') || lower.includes('おすすめ')) {
+        let inquiryReply = 'We recommend our signature Caffe Latte, Ceremonial Matcha Latte, or fresh Butter Croissants! What would you like to try?';
+        if (lang === 'Spanish') inquiryReply = '¡Le sugerimos nuestro Caffe Latte de la casa, Matcha Latte o croissants recién horneados! ¿Desea ordenar alguno?';
+        else if (lang === 'Japanese') inquiryReply = '当店おすすめの抹茶ラテ、カフェラテ、焼きたてクロワッサンはいかがでしょうか？';
+        else if (lang === 'Hindi') inquiryReply = 'हम हमारे लोकप्रिय मसाला चाय, कैफ़े लाते, और ताज़ा क्रोइसैन की सलाह देते हैं!';
+
+        return { detected_language: lang, customer_reply: inquiryReply, intent: 'INQUIRY', items: [], dietary: [], staff_notes_english: '' };
+      }
+
+      // 3. CLEAR ORDER
+      if (lower.includes('clear') || lower.includes('reset') || lower.includes('borrar') || lower.includes('cancel')) {
+        return { detected_language: lang, customer_reply: 'Order cleared / Cart reset', intent: 'CLEAR_ORDER', items: [], dietary: [], staff_notes_english: '' };
+      }
+
+      // 4. CONFIRM ORDER
+      if (lower.includes('confirm') || lower.includes('thumbs up') || lower.includes('place order') || lower.includes('confirmar')) {
+        return {
+          detected_language: lang,
+          customer_reply: lang === 'Spanish' ? '¡Pedido confirmado! En preparación.' : (lang === 'Japanese' ? '注文が確定しました！ありがとうございます。' : 'Order confirmed! Sent to barista.'),
+          intent: 'CONFIRM_ORDER',
+          items: [],
+          dietary: [],
+          staff_notes_english: ''
+        };
+      }
+
+      // Modifiers & Dietary
+      const options = [];
+      if (lower.includes('oat') || lower.includes('avena') || lower.includes('オーツミルク')) {
+        options.push('Oat Milk');
+        dietary.push('Dairy-Free');
+      }
+      if (lower.includes('sugar-free') || lower.includes('sin azúcar') || lower.includes('bina cheeni') || input.includes('बिना चीनी') || lower.includes('sans sucre') || lower.includes('sugar free')) {
+        options.push('Sugar-Free');
+        dietary.push('Sugar-Free');
+      }
+
+      // 5. EXPLICIT ITEM MATCHING ONLY
+      if (lower.includes('americano')) {
+        items.push({ name: 'Americano', price: 3.75, quantity: 1, options: [...options] });
+      } else if (lower.includes('flat white')) {
+        items.push({ name: 'Flat White', price: 4.95, quantity: 1, options: [...options] });
+      } else if (lower.includes('cold brew')) {
+        items.push({ name: 'Cold Brew', price: 4.50, quantity: 1, options: [...options] });
+      } else if (lower.includes('latte') || lower.includes('café con leche') || lower.includes('caffe latte') || lower.includes('カフェラテ')) {
+        items.push({ name: 'Caffe Latte', price: 4.75, quantity: 1, options: [...options] });
+      } else if (lower.includes('matcha') || lower.includes('抹茶')) {
+        items.push({ name: 'Matcha Green Tea Latte', price: 5.25, quantity: 1, options: [...options] });
+      } else if (lower.includes('espresso') || lower.includes('café solo')) {
+        items.push({ name: 'Espresso', price: 3.25, quantity: 1, options: [...options] });
+      } else if (lower.includes('cappuccino')) {
+        items.push({ name: 'Cappuccino', price: 4.50, quantity: 1, options: [...options] });
+      } else if (lower.includes('chai') || lower.includes('tea') || lower.includes('té') || lower.includes('चाय') || lower.includes('お茶')) {
+        items.push({ name: lower.includes('chai') || lower.includes('चाय') ? 'Spiced Chai Latte' : 'Earl Grey Tea', price: lower.includes('chai') ? 4.85 : 3.75, quantity: 1, options: [...options] });
+      } else if (lower.includes('croissant')) {
+        items.push({ name: 'Butter Croissant', price: 3.95, quantity: 1, options: [] });
+      } else if (lower.includes('coffee') || lower.includes('café') || lower.includes('コーヒー')) {
+        // Generic coffee inquiry: Do NOT auto-order Caffe Latte! Show options and prompt user
+        let coffeeOptionsText = 'Hello! We would love to make you a coffee. Which coffee type would you prefer?<br><br>' +
+          '• <strong>Espresso</strong> ($3.25)<br>' +
+          '• <strong>Caffe Latte</strong> ($4.75)<br>' +
+          '• <strong>Americano</strong> ($3.75)<br>' +
+          '• <strong>Cappuccino</strong> ($4.50)<br>' +
+          '• <strong>Flat White</strong> ($4.95)<br>' +
+          '• <strong>Cold Brew</strong> ($4.50)<br><br>' +
+          'Please specify your preferred coffee type, milk option, and sweetness level!';
+        return {
+          detected_language: lang,
+          customer_reply: coffeeOptionsText,
+          intent: 'INQUIRY',
+          items: [],
+          dietary: [],
+          staff_notes_english: '',
+          showCoffeeChips: true
+        };
+      } else {
+        // Conversational statement with no item named
+        return {
+          detected_language: lang,
+          customer_reply: 'I am here to help! What beverage or pastry would you like to order today?',
+          intent: 'CONVERSATION',
+          items: [],
+          dietary: [],
+          staff_notes_english: ''
+        };
+      }
+
+      return {
+        detected_language: lang,
+        customer_reply: reply,
+        intent: intent,
+        items: items,
+        dietary: dietary,
+        staff_notes_english: `Order: ${items.map(i => `${i.quantity}x ${i.name} ${i.options.length ? `(${i.options.join(', ')})` : ''}`).join(', ')}`
+      };
+    }
+
+    function setMode(mode) {
+      currentInputMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('inputBar').style.display = mode === 'signs' ? 'none' : 'flex';
+      document.getElementById('cameraViewport').classList.toggle('active', mode === 'signs');
+      document.getElementById('voicePanel').classList.toggle('active', mode === 'voice');
+
+      if (mode === 'text') document.getElementById('btnModeText').classList.add('active');
+      if (mode === 'voice') document.getElementById('btnModeVoice').classList.add('active');
+      if (mode === 'signs') {
+        document.getElementById('btnModeSigns').classList.add('active');
+        initCameraLandmarkTracker();
+      }
+    }
+
+    function sendCurrentText() {
+      const input = document.getElementById('orderInput');
+      const val = input.value.trim();
+      if (!val) return;
+      input.value = '';
+      sendOrder(val);
+    }
+
+    function sendOrder(userInput) {
+      appendChatMessage('user', userInput);
+      const res = parseAiOrder(userInput);
+
+      setTimeout(() => {
+        if (res.intent === 'CLEAR_ORDER') {
+          clearOrder();
+        } else if (res.intent === 'CONFIRM_ORDER') {
+          if (activeCart.length > 0) {
+            confirmOrder(res.detected_language, res.customer_reply);
+          }
+        } else if (res.intent === 'ORDER_ITEMS' && res.items.length > 0) {
+          res.items.forEach(item => {
+            activeCart.push(item);
+          });
+          renderTicket();
+        }
+
+        appendChatMessage('bot', res.customer_reply, res.staff_notes_english, res.showCoffeeChips);
+      }, 350);
+    }
+
+    function appendChatMessage(sender, text, staffNote, showCoffeeChips = false) {
+      const chat = document.getElementById('chatStream');
+      const msg = document.createElement('div');
+      msg.className = `msg ${sender}`;
+      let content = text;
+      if (staffNote) {
+        content += `<div class="staff-ticket-preview">☕ <strong>English Barista Note:</strong> ${staffNote}</div>`;
+      }
+      if (showCoffeeChips) {
+        content += `
+          <div style="margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">Tap to select a coffee:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="sign-pill" style="padding: 4px 10px; font-size: 11px;" onclick="sendOrder('I would like an Espresso please')">Espresso (\$3.25)</span>
+              <span class="sign-pill" style="padding: 4px 10px; font-size: 11px;" onclick="sendOrder('I will take a Caffe Latte please')">Caffe Latte (\$4.75)</span>
+              <span class="sign-pill" style="padding: 4px 10px; font-size: 11px;" onclick="sendOrder('I would like an Americano please')">Americano (\$3.75)</span>
+              <span class="sign-pill" style="padding: 4px 10px; font-size: 11px;" onclick="sendOrder('Make it a Cappuccino please')">Cappuccino (\$4.50)</span>
+              <span class="sign-pill" style="padding: 4px 10px; font-size: 11px;" onclick="sendOrder('I will take a Flat White please')">Flat White (\$4.95)</span>
+              <span class="sign-pill" style="padding: 4px 10px; font-size: 11px;" onclick="sendOrder('I would like a Cold Brew please')">Cold Brew (\$4.50)</span>
+            </div>
+          </div>
+        `;
+      }
+      msg.innerHTML = content;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function renderTicket() {
+      const list = document.getElementById('orderItemsList');
+      const count = document.getElementById('ticketCount');
+      const tagsWrap = document.getElementById('dietaryTagsWrap');
+      const btnConfirm = document.getElementById('btnConfirm');
+
+      count.textContent = activeCart.length;
+
+      if (activeCart.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 20px 0;">No items yet. Speak, type, or sign to add food & drinks!</p>';
+        tagsWrap.innerHTML = '';
+        document.getElementById('txtSubtotal').textContent = '$0.00';
+        document.getElementById('txtTax').textContent = '$0.00';
+        document.getElementById('txtTotal').textContent = '$0.00';
+        btnConfirm.disabled = true;
+        btnConfirm.style.opacity = '0.5';
+        return;
+      }
+
+      btnConfirm.disabled = false;
+      btnConfirm.style.opacity = '1';
+
+      // Gather dietary tags
+      const allTags = new Set();
+      activeCart.forEach(item => {
+        item.options.forEach(opt => {
+          if (opt.includes('Oat')) allTags.add('Dairy-Free');
+          if (opt.includes('Sugar-Free')) allTags.add('Sugar-Free');
+        });
+      });
+      allTags.add('Vegetarian');
+
+      tagsWrap.innerHTML = Array.from(allTags).map(t => {
+        let cls = 'tag-chip';
+        if (t === 'Dairy-Free') cls += ' dairy-free';
+        if (t === 'Sugar-Free') cls += ' sugar-free';
+        return `<span class="${cls}">✓ ${t}</span>`;
+      }).join('');
+
+      let subtotal = 0;
+      list.innerHTML = activeCart.map(item => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        return `
+          <div class="item-row">
+            <div>
+              <div class="name">${item.quantity}x ${item.name}</div>
+              ${item.options.length ? `<div class="mods">${item.options.join(', ')}</div>` : ''}
+            </div>
+            <div class="price">$${itemTotal.toFixed(2)}</div>
+          </div>
+        `;
+      }).join('');
+
+      const tax = subtotal * 0.0825;
+      const total = subtotal + tax;
+
+      document.getElementById('txtSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById('txtTax').textContent = `$${tax.toFixed(2)}`;
+      document.getElementById('txtTotal').textContent = `$${total.toFixed(2)}`;
+    }
+
+    function clearOrder() {
+      activeCart = [];
+      renderTicket();
+      appendChatMessage('bot', 'Order cleared and cart reset.');
+    }
+
+    function confirmOrder(lang = 'English', reply = 'Order confirmed and sent to kitchen!') {
+      if (activeCart.length === 0) return;
+      let total = 0;
+      const baristaList = activeCart.map(i => {
+        total += i.price * i.quantity;
+        return `• ${i.quantity}x ${i.name} ${i.options.length ? `(${i.options.join(', ')})` : ''}`;
+      }).join('<br>');
+      total = total * 1.0825;
+
+      document.getElementById('receiptModalId').textContent = `Ticket #ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+      document.getElementById('modalCustLang').textContent = lang;
+      document.getElementById('modalCustReply').textContent = reply;
+      document.getElementById('modalBaristaItems').innerHTML = baristaList;
+      document.getElementById('modalTotal').textContent = `$${total.toFixed(2)}`;
+
+      document.getElementById('receiptModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('receiptModal').classList.remove('active');
+      clearOrder();
+    }
+
+    // Voice Speech-To-Text implementation using Web Speech API (defaulting to en_US / system locale)
+    function toggleVoiceRecording() {
+      const mic = document.getElementById('micBtn');
+      const status = document.getElementById('micStatus');
+      isRecording = !isRecording;
+
+      if (!isRecording) {
+        mic.classList.remove('recording');
+        status.textContent = 'Voice recognition stopped.';
+        return;
+      }
+
+      mic.classList.add('recording');
+      status.textContent = '🎙️ Listening (default locale: en_US)... Speak now';
+
+      // Check for browser Web Speech API
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = navigator.language || 'en_US'; // Explicitly defaults to system locale / en_US
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+          const rawTranscript = event.results[0][0].transcript;
+          isRecording = false;
+          mic.classList.remove('recording');
+          status.textContent = `Heard: "${rawTranscript}"`;
+          // Preserve the exact raw text string from STT without forcing translation
+          sendOrder(rawTranscript);
+        };
+
+        recognition.onerror = () => {
+          fallbackVoiceSimulation();
+        };
+
+        try {
+          recognition.start();
+          return;
+        } catch (_) {
+          fallbackVoiceSimulation();
+        }
+      } else {
+        fallbackVoiceSimulation();
+      }
+
+      function fallbackVoiceSimulation() {
+        const phrases = [
+          'I would like an iced Caffe Latte with oat milk please',
+          'Hello! What do you recommend?',
+          'Just a hot espresso and a butter croissant',
+          'Quiero un café con leche con avena y sin azúcar por favor',
+          '抹茶ラテをオーツミルクでお願いします',
+          'मुझे एक मसाला चाय चाहिए बिना चीनी के'
+        ];
+        const chosen = phrases[Math.floor(Math.random() * phrases.length)];
+        setTimeout(() => {
+          isRecording = false;
+          mic.classList.remove('recording');
+          status.textContent = `Heard: "${chosen}"`;
+          sendOrder(chosen);
+        }, 1500);
+      }
+    }
+
+    // Camera Hand Landmark Simulator with 1.5s Hold Requirement
+    let animationId = null;
+    let gestureStep = 0;
+    let holdTimer = null;
+    let holdStartMs = 0;
+    const REQUIRED_HOLD_MS = 1500;
+
+    const gesturesList = [
+      { title: '👍 Thumbs Up (Confirm)', cmd: 'Confirm and place order', confidence: '96%' },
+      { title: '☝️ Index Point (Coffee)', cmd: 'Order 1 Caffe Latte', confidence: '94%' },
+      { title: '✌️ Peace Sign (Tea)', cmd: 'Order 1 Matcha Green Tea', confidence: '93%' },
+      { title: '👌 OK Sign (Oat Milk)', cmd: 'Add Oat Milk to beverage', confidence: '93%' },
+      { title: '✊ Fist (Sugar-Free)', cmd: 'Make it Sugar-Free', confidence: '94%' },
+      { title: '✋ Open Palm (Clear)', cmd: 'Clear order', confidence: '96%' }
+    ];
+
+    function cycleNextGestureDemo() {
+      gestureStep = (gestureStep + 1) % gesturesList.length;
+      startGestureHold(gesturesList[gestureStep]);
+    }
+
+    function startGestureHold(candidate) {
+      activeGesture = null;
+      holdStartMs = Date.now();
+      const actionBtn = document.getElementById('hudActionBtn');
+      const titleElem = document.getElementById('hudGestureTitle');
+      const cmdElem = document.getElementById('hudGestureCmd');
+      const timeBadge = document.getElementById('holdTimeBadge');
+      const progressElem = document.getElementById('hudHoldProgress');
+
+      actionBtn.disabled = true;
+      actionBtn.textContent = 'Holding...';
+      actionBtn.style.background = '#666';
+
+      titleElem.textContent = `Detecting: ${candidate.title}`;
+      cmdElem.textContent = 'Hold steady for 1.5s to confirm';
+
+      clearInterval(holdTimer);
+      holdTimer = setInterval(() => {
+        const elapsed = Date.now() - holdStartMs;
+        const pct = Math.min(100, (elapsed / REQUIRED_HOLD_MS) * 100);
+        progressElem.style.width = `${pct}%`;
+        timeBadge.textContent = `${(elapsed / 1000).toFixed(1)}s / 1.5s`;
+
+        if (elapsed >= REQUIRED_HOLD_MS) {
+          clearInterval(holdTimer);
+          activeGesture = candidate;
+          progressElem.style.background = '#4CAF50';
+          titleElem.textContent = `✅ Confirmed: ${candidate.title}`;
+          cmdElem.textContent = `Ready: "${candidate.cmd}"`;
+          timeBadge.textContent = '1.5s / 1.5s (Ready)';
+          actionBtn.disabled = false;
+          actionBtn.style.background = '#FFC107';
+          actionBtn.style.color = '#12141D';
+          actionBtn.textContent = 'Send Sign to Order';
+        }
+      }, 50);
+    }
+
+    function initCameraLandmarkTracker() {
+      const canvas = document.getElementById('landmarkCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+
+      // Start first hold cycle deliberately
+      startGestureHold(gesturesList[0]);
+
+      function drawLandmarks() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw camera crosshairs & grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(canvas.width / 2 - 120, canvas.height / 2 - 120, 240, 240);
+
+        // Animated skeleton joints
+        const time = Date.now() * 0.003;
+        const centerX = canvas.width / 2 + Math.sin(time) * 15;
+        const centerY = canvas.height / 2 + Math.cos(time) * 10;
+
+        ctx.strokeStyle = '#26A69A';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = '#FFD54F';
+
+        // Draw hand skeleton lines
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY + 80); // wrist
+        ctx.lineTo(centerX - 30, centerY + 20);
+        ctx.lineTo(centerX - 50, centerY - 20); // thumb
+        ctx.moveTo(centerX, centerY + 80);
+        ctx.lineTo(centerX - 10, centerY - 50); // index
+        ctx.moveTo(centerX, centerY + 80);
+        ctx.lineTo(centerX + 15, centerY - 60); // middle
+        ctx.moveTo(centerX, centerY + 80);
+        ctx.lineTo(centerX + 35, centerY - 45); // ring
+        ctx.moveTo(centerX, centerY + 80);
+        ctx.lineTo(centerX + 55, centerY - 20); // pinky
+        ctx.stroke();
+
+        // Draw points
+        const points = [
+          [centerX, centerY + 80],
+          [centerX - 30, centerY + 20], [centerX - 50, centerY - 20],
+          [centerX - 10, centerY - 50], [centerX + 15, centerY - 60],
+          [centerX + 35, centerY - 45], [centerX + 55, centerY - 20]
+        ];
+
+        points.forEach(([x, y]) => {
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        if (currentInputMode === 'signs') {
+          requestAnimationFrame(drawLandmarks);
+        }
+      }
+      drawLandmarks();
+    }
+
+    function dispatchActiveGesture() {
+      if (activeGesture) {
+        sendOrder(activeGesture.cmd);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+name: cafe_companion
+description: "Cafe Companion - Smarter Ordering with AI Multi-lingual parsing and Gesture Sign Recognition"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_generative_ai: ^0.4.6
+  provider: ^6.1.2
+  camera: ^0.11.0+2
+  google_mlkit_pose_detection: ^0.13.0
+  speech_to_text: ^7.0.0
+  flutter_tts: ^4.2.2
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
